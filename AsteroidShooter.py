@@ -1,4 +1,5 @@
 import pygame, sys
+from random import randint, uniform
 
 def laser_update(laser_list, speed = 300):
 	for rect in laser_list:
@@ -19,6 +20,14 @@ def laser_timer(can_shoot, duration = 500):
 		if current_time - shoot_time > duration:
 			can_shoot = True
 	return can_shoot
+
+def meteor_update(meteor_list, speed = 300):
+	for meteor_tuple in meteor_list:
+		direction = meteor_tuple[1] 
+		meteor_rect = meteor_tuple[0]
+		meteor_rect.center += direction * speed * dt
+		if meteor_rect.top > WINDOW_HEIGHT:
+			meteor_list.remove(meteor_tuple)
 
 # game init
 pygame.init()
@@ -45,6 +54,13 @@ shoot_time = None
 # import text
 font = pygame.font.Font('D:/Programming/Learn Python by making games/Asteroid Shooter/asteroid_shooter_files/project_4 - Image Text/graphics/subatomic.ttf', 50)
 
+# meteor
+meteor_surf = pygame.image.load('D:/Programming/Learn Python by making games/Asteroid Shooter/asteroid_shooter_files/project_4 - Image Text/graphics/meteor.png').convert_alpha()
+meteor_list = []
+
+# meteor timer
+meteor_timer = pygame.event.custom_type()
+pygame.time.set_timer(meteor_timer,500)
 
 while True: 
 
@@ -64,6 +80,20 @@ while True:
 			can_shoot = False
 			shoot_time = pygame.time.get_ticks()
 
+		if event.type == meteor_timer:
+
+			# random position
+			x_pos = randint(-100,WINDOW_WIDTH + 100)
+			y_pos = randint(-100,-50)
+
+			# creating a rect
+			meteor_rect = meteor_surf.get_rect(center = (x_pos,y_pos))
+
+			# create a random direction
+			direction = pygame.math.Vector2(uniform(-0.5,0.5),1)
+
+			meteor_list.append((meteor_rect,direction))
+
 	# framerate limit
 	dt = clock.tick(120) / 1000
 
@@ -72,6 +102,7 @@ while True:
 
 	# update
 	laser_update(laser_list)
+	meteor_update(meteor_list)
 	can_shoot = laser_timer(can_shoot, 500)
 
 	# drawing
@@ -82,6 +113,9 @@ while True:
 
 	for rect in laser_list:
 		display_surface.blit(laser_surf,rect)
+
+	for meteor_tuple in meteor_list:
+		display_surface.blit(meteor_surf,meteor_tuple[0])
 
 	display_surface.blit(ship_surf,(ship_rect))
 
