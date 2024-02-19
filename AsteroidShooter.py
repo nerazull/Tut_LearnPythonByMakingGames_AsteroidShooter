@@ -1,5 +1,11 @@
 import pygame, sys
 
+def laser_update(laser_list, speed = 300):
+	for rect in laser_list:
+		rect.y -= speed * dt
+		if rect.bottom < 0:
+			laser_list.remove(rect)
+
 # game init
 pygame.init()
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
@@ -16,7 +22,7 @@ bg_surf = pygame.image.load('D:/Programming/Learn Python by making games/Asteroi
 
 # laser import
 laser_surf = pygame.image.load('D:/Programming/Learn Python by making games/Asteroid Shooter/asteroid_shooter_files/project_4 - Image Text/graphics/laser.png').convert_alpha()
-laser_rect = laser_surf.get_rect(midbottom = ship_rect.midtop) 
+laser_list = [] 
 
 # import text
 font = pygame.font.Font('D:/Programming/Learn Python by making games/Asteroid Shooter/asteroid_shooter_files/project_4 - Image Text/graphics/subatomic.ttf', 50)
@@ -30,7 +36,12 @@ while True:
 		if event.type == pygame.QUIT:
 			pygame.quit()
 			sys.exit()
-		
+
+		if event.type == pygame.MOUSEBUTTONDOWN: # 0.5 seconds of delay before we can shoot again
+			print('shoot laser')
+			laser_rect = laser_surf.get_rect(midbottom = ship_rect.midtop)
+			laser_list.append(laser_rect)
+
 	# framerate limit
 	dt = clock.tick(120) / 1000
 
@@ -38,17 +49,20 @@ while True:
 	ship_rect.center = pygame.mouse.get_pos()
 
 	# update
-	laser_rect.y -= round(200 * dt)
+	laser_update(laser_list)
 
 	# drawing
 	display_surface.fill((0,0,0))
 	display_surface.blit(bg_surf,(0,0))
 
 	display_surface.blit(text_surf,(text_rect))
-	display_surface.blit(laser_surf,(laser_rect))
-
 	pygame.draw.rect(display_surface, (255,255,255), text_rect.inflate(30,30), width = 8, border_radius = 5)
+
+	for rect in laser_list:
+		display_surface.blit(laser_surf,rect)
+
 	display_surface.blit(ship_surf,(ship_rect))
 
 	# draw the final frame
 	pygame.display.update()
+	print(len(laser_list))
