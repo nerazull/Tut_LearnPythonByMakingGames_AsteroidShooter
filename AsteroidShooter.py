@@ -6,6 +6,20 @@ def laser_update(laser_list, speed = 300):
 		if rect.bottom < 0:
 			laser_list.remove(rect)
 
+def display_score():
+	score_text = f'Score: {pygame.time.get_ticks() // 1000}'
+	text_surf = font.render(score_text, True, (255,255,255))
+	text_rect = text_surf.get_rect(midbottom = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 80))
+	display_surface.blit(text_surf,(text_rect))
+	pygame.draw.rect(display_surface, (255,255,255), text_rect.inflate(30,30), width = 8, border_radius = 5)
+
+def laser_timer(can_shoot, duration = 500):
+	if not can_shoot:
+		current_time = pygame.time.get_ticks()
+		if current_time - shoot_time > duration:
+			can_shoot = True
+	return can_shoot
+
 # game init
 pygame.init()
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
@@ -24,10 +38,13 @@ bg_surf = pygame.image.load('D:/Programming/Learn Python by making games/Asteroi
 laser_surf = pygame.image.load('D:/Programming/Learn Python by making games/Asteroid Shooter/asteroid_shooter_files/project_4 - Image Text/graphics/laser.png').convert_alpha()
 laser_list = [] 
 
+# laser timer
+can_shoot = True
+shoot_time = None
+
 # import text
 font = pygame.font.Font('D:/Programming/Learn Python by making games/Asteroid Shooter/asteroid_shooter_files/project_4 - Image Text/graphics/subatomic.ttf', 50)
-text_surf = font.render('Space', True, (255,255,255))
-text_rect = text_surf.get_rect(midbottom = (WINDOW_WIDTH / 2, WINDOW_HEIGHT - 80))
+
 
 while True: 
 
@@ -37,10 +54,15 @@ while True:
 			pygame.quit()
 			sys.exit()
 
-		if event.type == pygame.MOUSEBUTTONDOWN: # 0.5 seconds of delay before we can shoot again
-			print('shoot laser')
+		if event.type == pygame.MOUSEBUTTONDOWN and can_shoot:
+
+			# laser
 			laser_rect = laser_surf.get_rect(midbottom = ship_rect.midtop)
 			laser_list.append(laser_rect)
+
+			# timer
+			can_shoot = False
+			shoot_time = pygame.time.get_ticks()
 
 	# framerate limit
 	dt = clock.tick(120) / 1000
@@ -50,13 +72,13 @@ while True:
 
 	# update
 	laser_update(laser_list)
+	can_shoot = laser_timer(can_shoot, 500)
 
 	# drawing
 	display_surface.fill((0,0,0))
 	display_surface.blit(bg_surf,(0,0))
 
-	display_surface.blit(text_surf,(text_rect))
-	pygame.draw.rect(display_surface, (255,255,255), text_rect.inflate(30,30), width = 8, border_radius = 5)
+	display_score()
 
 	for rect in laser_list:
 		display_surface.blit(laser_surf,rect)
@@ -65,4 +87,3 @@ while True:
 
 	# draw the final frame
 	pygame.display.update()
-	print(len(laser_list))
